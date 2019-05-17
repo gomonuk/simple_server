@@ -4,8 +4,19 @@
 
 #include <evhttp.h>
 
+//#include <jansson.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+
+#include <json.hpp>
+
+
+using json =     nlohmann::json;
 int main()
 {
+    json.
     if (!event_init())
     {
         std::cerr << "Failed to init libevent." << std::endl;
@@ -22,24 +33,28 @@ int main()
     void (*OnReq)(evhttp_request *req, void *) = [] (evhttp_request *req, void *)
     {
 
-        struct evbuffer* buf = nullptr;
-        size_t len = 0;
-        char* data = nullptr;
+        struct evbuffer *requestBuffer;
+        size_t requestLen;
+        char *requestDataBuffer;
 
-        if (req == NULL) return; // req is null after a timeout
+        json_t *requestJSON;
+        json_error_t error;
 
-        // get the event buffer containing POST body
-        buf = evhttp_request_get_input_buffer(req);
+        // Error buffer
+        char errorText[1024];
 
-        // get the length of POST body
-        len = evbuffer_get_length(buf);
+        // Process Request
+        requestBuffer = evhttp_request_get_input_buffer(req);
+        requestLen = evbuffer_get_length(requestBuffer);
 
-        // create a char array to extract POST body
-        data = (char *)malloc(len + 1);
-        data[len] = 0;
+        requestDataBuffer = (char *)malloc(sizeof(char) * requestLen);
+        memset(requestDataBuffer, 0, requestLen);
+        evbuffer_copyout(requestBuffer, requestDataBuffer, requestLen);
 
-        // copy POST body into your char array
-        evbuffer_copyout(buf, data, len);
+        printf("%s\n", evhttp_request_uri(req));
+
+        requestJSON = json_loadb(requestDataBuffer, requestLen, 0, &error);
+        free(requestDataBuffer);
 
 
         auto *OutBuf = evhttp_request_get_output_buffer(req);

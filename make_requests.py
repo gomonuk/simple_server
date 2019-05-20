@@ -1,15 +1,18 @@
 # curl -d '{"key1":"value1", "key2":"value2"}' -H "Content-Type: application/json" -X POST http://localhost:8000
-import json
 
 import requests
+import sys
+print("This is the name of the script: ", sys.argv)
 
-r = requests.post("http://localhost:5555",
-                  json={"key1":"value1", "key2":"value2"}
-                  # data=json.dumps({"key1":"value1", "key2":"value2"})
-                  )
-# r = requests.get("http://localhost:5555")
 
-z = r.json()
+if sys.argv[1] == "GET":
+    r = requests.post("http://localhost:" + sys.argv[2],
+                      json={"key1": "value1", "key2": "value" + sys.argv[3]}
+                      )
+    z = r.json()
+    print(z['key1'])
+    print(r.json())
+else:
+    r = requests.get("http://localhost:" + sys.argv[2])
+    print(r.text)
 
-print(z['key1'])
-print(r.json())

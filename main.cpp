@@ -19,11 +19,11 @@ struct messagePost
 };
 std::vector<messagePost> messagesPostKeep;
 
-void messageAppend(char *message){
+void messageAppend( char *message){
     bool needAppend = true;
 
     for (messagePost &m : messagesPostKeep) {
-        if (m.message == message) {
+        if (strcmp(m.message, message) == 0 ) {
             m.count += 1;
             needAppend = false;
         }
@@ -32,15 +32,13 @@ void messageAppend(char *message){
     if (needAppend){
         messagePost m = messagePost();
         messagesPostKeep.push_back(m);
-        VECTOR_SIZE += 1;
         messagesPostKeep[VECTOR_SIZE].count = 1;
         strcpy(messagesPostKeep[VECTOR_SIZE].message, message);
-
+        VECTOR_SIZE += 1;
     }
 
     for (messagePost &m : messagesPostKeep) {
-        std::cerr  << "p";
-//        std::cerr  << "p" << m.message << "p" << m.count << "p"  << std::endl;
+        std::cerr << m.message << " " << m.count << std::endl;
     }}
 
 
@@ -85,12 +83,6 @@ void OnPOST (evhttp_request *req, void *) {
     int responseLen;
     struct evbuffer *responseBuffer;
 
-    // Create JSON response data
-//        responseJSON = json_object();
-//
-//        message = json_string("Hello World");
-//        json_object_set_new(responseJSON, "message", message);
-
     // dump JSON to buffer and store response length as string
     responseData = json_dumps(requestJSONobj, JSON_INDENT(3));
     responseLen = static_cast<int>(strlen(responseData));
@@ -107,8 +99,7 @@ void OnPOST (evhttp_request *req, void *) {
 //        evbuffer_add(responseBuffer, responseData, responseLen);
 
     evbuffer_add_printf(OutBuf, responseData);
-    evhttp_send_reply(req, HTTP_OK, "", OutBuf);
-
+    evhttp_send_reply(req, HTTP_OK, "ОК", OutBuf);
 }
 
 

@@ -2,10 +2,9 @@
 
 import requests
 import sys
-print("This is the name of the script: ", sys.argv)
 
 
-if sys.argv[1] == "GET":
+if sys.argv[1] == "POST":
     r = requests.post("http://localhost:" + sys.argv[2],
                       json={"key1": "value1", "key2": "value" + sys.argv[3]}
                       )

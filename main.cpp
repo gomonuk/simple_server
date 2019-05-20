@@ -46,7 +46,7 @@ void OnGET (evhttp_request *req, void *) {
     auto *OutBuf = evhttp_request_get_output_buffer(req);
     if (!OutBuf)
         return;
-    evbuffer_add_printf(OutBuf, "<html><body><center><h1>Hello Wotld!</h1></center></body></html>");
+    evbuffer_add_printf(OutBuf, "<html><body><center><h1>Hello C++</h1></center></body></html>");
     evhttp_send_reply(req, HTTP_OK, "OK", OutBuf);
 };
 
@@ -56,47 +56,30 @@ void OnPOST (evhttp_request *req, void *) {
     if (!OutBuf)
         return;
 
-    // прием json
-
-    json_t *requestJSONobj;
-    struct evbuffer *requestBuffer;
-    size_t requestLen;
-    char *requestDataBuffer;
     json_error_t error;
 
+    // Получаем JSON
+    struct evbuffer *requestBuffer = evhttp_request_get_input_buffer(req);
+    size_t requestLen = evbuffer_get_length(requestBuffer);
+    char *requestText = (char *) malloc(sizeof(char) * requestLen);
+    evbuffer_copyout(requestBuffer, requestText, requestLen);
+    json_t *requestJSONobj = json_loadb(requestText, requestLen, 0, &error);
 
-    requestBuffer = evhttp_request_get_input_buffer(req);
-    requestLen = evbuffer_get_length(requestBuffer);
-    requestDataBuffer = (char *) malloc(sizeof(char) * requestLen);
-    evbuffer_copyout(requestBuffer, requestDataBuffer, requestLen);
-    requestJSONobj = json_loadb(requestDataBuffer, requestLen, 0, &error);
+    // Записываем JSON в структуру, для подсчета уникальных запросов
+    messageAppend(requestText);
 
-    messageAppend(requestDataBuffer);
-
-    // отправка json
-    json_t *responseJSON;
-    json_t *message;
-
+    // Отправляем JSON обратно.
     char responseHeader[HEADER_BUFFER_SIZE];
 
-    char *responseData;
-    int responseLen;
-    struct evbuffer *responseBuffer;
-
     // dump JSON to buffer and store response length as string
-    responseData = json_dumps(requestJSONobj, JSON_INDENT(3));
-    responseLen = static_cast<int>(strlen(responseData));
-    snprintf(responseHeader, HEADER_BUFFER_SIZE, "%d", responseLen);
+    char *responseData = json_dumps(requestJSONobj, JSON_INDENT(3));
+    size_t responseLen = strlen(responseData);
+    snprintf(responseHeader, HEADER_BUFFER_SIZE, "%zu", responseLen);
     json_decref(requestJSONobj);
-
-    // create a response buffer to send reply
-    responseBuffer = evbuffer_new();
 
     // add appropriate headers
     evhttp_add_header(req->output_headers, "Content-Type", "application/json");
     evhttp_add_header(req->output_headers, "Content-Length", responseHeader);
-
-//        evbuffer_add(responseBuffer, responseData, responseLen);
 
     evbuffer_add_printf(OutBuf, responseData);
     evhttp_send_reply(req, HTTP_OK, "ОК", OutBuf);

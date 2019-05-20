@@ -1,11 +1,10 @@
-#include <memory>
-#include <cstdint>
+#include <vector>
+#include <cstring>
 #include <iostream>
+#include <memory>
 
 #include <evhttp.h>
 #include <jansson.h>
-#include <cstring>
-#include <vector>
 
 #define HEADER_BUFFER_SIZE 1024
 int VECTOR_SIZE = 0;
